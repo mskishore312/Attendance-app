@@ -3,6 +3,7 @@ import 'package:printing/printing.dart';
 
 import '../models/company.dart';
 import '../models/invoice.dart';
+import '../services/invoice_posting_service.dart';
 import '../services/pdf_invoice_service.dart';
 
 class InvoiceScreen extends StatefulWidget {
@@ -17,6 +18,7 @@ class InvoiceScreen extends StatefulWidget {
 
 class _InvoiceScreenState extends State<InvoiceScreen> {
   bool _withInventory = true;
+  bool _posting = false;
   final _party = TextEditingController();
   final _description = TextEditingController();
   final _hsn = TextEditingController();
@@ -55,6 +57,25 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
     lines: _lines,
   );
 
+  Future<void> _postInvoice() async {
+    if (_lines.isEmpty) return;
+    setState(() => _posting = true);
+    try {
+      await const InvoicePostingService().postInvoice(company: widget.company, invoice: _draft());
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Invoice posted to accounts')));
+      setState(() {
+        _lines.clear();
+        _party.clear();
+        _posting = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _posting = false);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.toString())));
+    }
+  }
+
   Future<void> _previewPdf() async {
     if (_lines.isEmpty) return;
     final draft = _draft();
@@ -89,7 +110,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
             selected: {_withInventory},
             onSelectionChanged: (value) => setState(() => _withInventory = value.first),
           ),
-          TextField(controller: _party, decoration: const InputDecoration(labelText: 'Party name')),
+          TextField(controller: _party, decoration: const InputDecoration(labelText: 'Party ledger name')),
           TextField(controller: _description, decoration: InputDecoration(labelText: _withInventory ? 'Item name' : 'Service / ledger description')),
           if (_withInventory) TextField(controller: _hsn, decoration: const InputDecoration(labelText: 'HSN')),
           if (_withInventory) TextField(controller: _qty, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Quantity')),
@@ -109,7 +130,9 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
           ListTile(title: const Text('GST'), trailing: Text('₹${draft.gstAmount.toStringAsFixed(2)}')),
           ListTile(title: const Text('Total'), trailing: Text('₹${draft.total.toStringAsFixed(2)}')),
           const SizedBox(height: 16),
-          FilledButton.icon(onPressed: _previewPdf, icon: const Icon(Icons.picture_as_pdf), label: const Text('Preview / Export PDF')),
+          FilledButton.icon(onPressed: _posting ? null : _postInvoice, icon: const Icon(Icons.save), label: Text(_posting ? 'Posting...' : 'Save & Post Invoice')),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(onPressed: _previewPdf, icon: const Icon(Icons.picture_as_pdf), label: const Text('Preview / Export PDF')),
         ],
       ),
     );
