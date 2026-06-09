@@ -1,11 +1,27 @@
 class Voucher {
-  const Voucher({this.id, required this.companyId, required this.type, required this.date, required this.narration});
+  const Voucher({
+    this.id,
+    required this.companyId,
+    required this.type,
+    required this.date,
+    required this.narration,
+    this.taxableValue = 0,
+    this.gstRate = 0,
+    this.cgst = 0,
+    this.sgst = 0,
+    this.igst = 0,
+  });
 
   final int? id;
   final int companyId;
   final String type;
   final DateTime date;
   final String narration;
+  final double taxableValue;
+  final double gstRate;
+  final double cgst;
+  final double sgst;
+  final double igst;
 
   Map<String, Object?> toMap() => {
     'id': id,
@@ -13,6 +29,11 @@ class Voucher {
     'type': type,
     'date': date.toIso8601String(),
     'narration': narration,
+    'taxable_value': taxableValue,
+    'gst_rate': gstRate,
+    'cgst': cgst,
+    'sgst': sgst,
+    'igst': igst,
   };
 
   factory Voucher.fromMap(Map<String, Object?> map) => Voucher(
@@ -21,6 +42,11 @@ class Voucher {
     type: map['type'] as String,
     date: DateTime.parse(map['date'] as String),
     narration: map['narration'] as String,
+    taxableValue: ((map['taxable_value'] ?? 0) as num).toDouble(),
+    gstRate: ((map['gst_rate'] ?? 0) as num).toDouble(),
+    cgst: ((map['cgst'] ?? 0) as num).toDouble(),
+    sgst: ((map['sgst'] ?? 0) as num).toDouble(),
+    igst: ((map['igst'] ?? 0) as num).toDouble(),
   );
 }
 
