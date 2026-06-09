@@ -16,6 +16,8 @@ class ReportsScreen extends StatefulWidget {
 class _ReportsScreenState extends State<ReportsScreen> {
   late Future<List<VoucherWithEntries>> _dayBook;
   late Future<List<Map<String, Object?>>> _trialBalance;
+  late Future<List<Map<String, Object?>>> _profitAndLoss;
+  late Future<List<Map<String, Object?>>> _balanceSheet;
 
   @override
   void initState() {
@@ -26,18 +28,30 @@ class _ReportsScreenState extends State<ReportsScreen> {
   void _reload() {
     _dayBook = AppDatabase.instance.getVouchers(widget.company.id!);
     _trialBalance = AppDatabase.instance.getTrialBalance(widget.company.id!);
+    _profitAndLoss = AppDatabase.instance.getProfitAndLoss(widget.company.id!);
+    _balanceSheet = AppDatabase.instance.getBalanceSheet(widget.company.id!);
   }
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
+      length: 4,
       child: Scaffold(
         appBar: AppBar(
           title: Text('${widget.company.name} - Reports'),
-          bottom: const TabBar(tabs: [Tab(text: 'Day Book'), Tab(text: 'Trial Balance')]),
+          bottom: const TabBar(
+            isScrollable: true,
+            tabs: [Tab(text: 'Day Book'), Tab(text: 'Trial Balance'), Tab(text: 'P&L'), Tab(text: 'Balance Sheet')],
+          ),
         ),
-        body: TabBarView(children: [_DayBook(future: _dayBook), _TrialBalance(future: _trialBalance)]),
+        body: TabBarView(
+          children: [
+            _DayBook(future: _dayBook),
+            _LedgerBalanceReport(title: 'Trial Balance', future: _trialBalance),
+            _LedgerBalanceReport(title: 'Profit & Loss', future: _profitAndLoss),
+            _LedgerBalanceReport(title: 'Balance Sheet', future: _balanceSheet),
+          ],
+        ),
       ),
     );
   }
@@ -74,9 +88,10 @@ class _DayBook extends StatelessWidget {
   }
 }
 
-class _TrialBalance extends StatelessWidget {
-  const _TrialBalance({required this.future});
+class _LedgerBalanceReport extends StatelessWidget {
+  const _LedgerBalanceReport({required this.title, required this.future});
 
+  final String title;
   final Future<List<Map<String, Object?>>> future;
 
   @override
@@ -86,7 +101,7 @@ class _TrialBalance extends StatelessWidget {
       builder: (context, snapshot) {
         if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         final rows = snapshot.data!;
-        if (rows.isEmpty) return const Center(child: Text('No ledger balances yet.'));
+        if (rows.isEmpty) return Center(child: Text('No data for $title yet.'));
         double totalDr = 0;
         double totalCr = 0;
         for (final row in rows) {
