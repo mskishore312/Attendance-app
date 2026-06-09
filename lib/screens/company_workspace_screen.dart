@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/company.dart';
 import 'backup_screen.dart';
+import 'invoice_screen.dart';
 import 'ledger_screen.dart';
 import 'reports_screen.dart';
 import 'voucher_screen.dart';
@@ -27,8 +28,20 @@ class CompanyWorkspaceScreen extends StatelessWidget {
           _Tile(
             icon: Icons.receipt_long,
             title: 'Vouchers',
-            subtitle: 'Post receipt, payment, contra, journal, sales and purchase entries',
+            subtitle: 'Post receipt, payment, contra and journal entries',
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => VoucherScreen(company: company))),
+          ),
+          _Tile(
+            icon: Icons.sell,
+            title: 'Sales Invoice',
+            subtitle: 'Create invoice with inventory or without inventory and export PDF',
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => InvoiceScreen(company: company, type: 'Sales'))),
+          ),
+          _Tile(
+            icon: Icons.shopping_cart,
+            title: 'Purchase Invoice',
+            subtitle: 'Record purchase with inventory or without inventory and export PDF',
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => InvoiceScreen(company: company, type: 'Purchase'))),
           ),
           _Tile(
             icon: Icons.bar_chart,
