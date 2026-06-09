@@ -16,10 +16,10 @@ dependencies:
   sqflite: ^2.3.3
   path: ^1.9.0
   intl: ^0.19.0
+  pdf: ^3.11.0
+  printing: ^5.13.0
 
 # Planned later:
-# pdf: ^3.11.0
-# printing: ^5.13.0
 # excel: ^4.0.3
 # file_picker: ^8.0.0
 # image_picker: ^1.1.2
