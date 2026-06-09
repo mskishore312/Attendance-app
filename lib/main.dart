@@ -30,13 +30,13 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final modules = <TompaModule>[
       TompaModule('Companies', Icons.business, 'Create, edit, and select companies', () => const CompanyScreen()),
-      TompaModule('Masters', Icons.account_tree, 'Groups, ledgers, stock items, units', null),
-      TompaModule('Vouchers', Icons.receipt_long, 'Receipt, payment, contra, journal, sales, purchase', null),
-      TompaModule('Reports', Icons.bar_chart, 'Day book, ledger, trial balance, P&L, balance sheet', null),
-      TompaModule('GST', Icons.percent, 'GST registers, GSTR-1, GSTR-3B summaries', null),
-      TompaModule('Backup & Export', Icons.backup, 'PDF, Excel, JSON backup, Tally export roadmap', null),
-      TompaModule('AI Assistant', Icons.smart_toy, 'Ledger suggestion, bill extraction, voice entry roadmap', null),
-      TompaModule('Settings', Icons.settings, 'Financial year, security, app preferences', null),
+      const TompaModule('Masters', Icons.account_tree, 'Groups, ledgers, stock items, units', null),
+      const TompaModule('Vouchers', Icons.receipt_long, 'Receipt, payment, contra, journal, sales, purchase', null),
+      const TompaModule('Reports', Icons.bar_chart, 'Day book, ledger, trial balance, P&L, balance sheet', null),
+      const TompaModule('GST', Icons.percent, 'GST registers, GSTR-1, GSTR-3B summaries', null),
+      const TompaModule('Backup & Export', Icons.backup, 'PDF, Excel, JSON backup, Tally export roadmap', null),
+      const TompaModule('AI Assistant', Icons.smart_toy, 'Ledger suggestion, bill extraction, voice entry roadmap', null),
+      const TompaModule('Settings', Icons.settings, 'Financial year, security, app preferences', null),
     ];
 
     return Scaffold(
