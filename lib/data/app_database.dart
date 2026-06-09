@@ -15,7 +15,7 @@ class AppDatabase {
     if (_db != null) return _db!;
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, 'tompa.db');
-    _db = await openDatabase(path, version: 2, onCreate: _createDb, onUpgrade: _upgradeDb);
+    _db = await openDatabase(path, version: 3, onCreate: _createDb, onUpgrade: _upgradeDb);
     return _db!;
   }
 
@@ -45,6 +45,7 @@ class AppDatabase {
 
   Future<void> _upgradeDb(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) await _createVoucherTables(db);
+    if (oldVersion < 3) await _addGstColumns(db);
   }
 
   Future<void> _createVoucherTables(Database db) async {
@@ -55,6 +56,11 @@ class AppDatabase {
         type TEXT NOT NULL,
         date TEXT NOT NULL,
         narration TEXT NOT NULL,
+        taxable_value REAL NOT NULL DEFAULT 0,
+        gst_rate REAL NOT NULL DEFAULT 0,
+        cgst REAL NOT NULL DEFAULT 0,
+        sgst REAL NOT NULL DEFAULT 0,
+        igst REAL NOT NULL DEFAULT 0,
         FOREIGN KEY(company_id) REFERENCES companies(id)
       )
     ''');
@@ -70,6 +76,14 @@ class AppDatabase {
         FOREIGN KEY(ledger_id) REFERENCES ledgers(id)
       )
     ''');
+  }
+
+  Future<void> _addGstColumns(Database db) async {
+    for (final column in ['taxable_value', 'gst_rate', 'cgst', 'sgst', 'igst']) {
+      try {
+        await db.execute('ALTER TABLE vouchers ADD COLUMN $column REAL NOT NULL DEFAULT 0');
+      } catch (_) {}
+    }
   }
 
   Future<int> insertCompany(Company company) async {
@@ -149,5 +163,24 @@ class AppDatabase {
       final group = row['group_name'] as String;
       return group.contains('Cash') || group.contains('Bank') || group.contains('Debtor') || group.contains('Creditor') || group.contains('Capital') || group.contains('Duties');
     }).toList();
+  }
+
+  Future<Map<String, double>> getGstSummary(int companyId) async {
+    final db = await database;
+    final rows = await db.rawQuery('''
+      SELECT IFNULL(SUM(taxable_value), 0) AS taxable,
+             IFNULL(SUM(cgst), 0) AS cgst,
+             IFNULL(SUM(sgst), 0) AS sgst,
+             IFNULL(SUM(igst), 0) AS igst
+      FROM vouchers
+      WHERE company_id = ? AND type IN ('Sales', 'Purchase')
+    ''', [companyId]);
+    final row = rows.first;
+    return {
+      'taxable': (row['taxable'] as num).toDouble(),
+      'cgst': (row['cgst'] as num).toDouble(),
+      'sgst': (row['sgst'] as num).toDouble(),
+      'igst': (row['igst'] as num).toDouble(),
+    };
   }
 }
